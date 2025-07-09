@@ -1,21 +1,59 @@
+require("dotenv").config()
 const mysql = require("mysql2/promise")
 
 async function testConnection() {
   try {
     console.log("🔍 Testing database connection...")
-    console.log(`Host: ${process.env.DB_HOST || "127.0.0.1"}`)
-    console.log(`Port: ${process.env.DB_PORT || "3306"}`)
-    console.log(`User: ${process.env.DB_USER || "root"}`)
-    console.log(`Database: ${process.env.DB_NAME || "al_amin_raoe_motor"}`)
 
-    const connection = await mysql.createConnection({
-      host: "127.0.0.1", // Use IPv4 explicitly
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "al_amin_raoe_motor",
-      port: Number.parseInt(process.env.DB_PORT || "3306"),
-      connectTimeout: 10000,
-    })
+    let connection
+
+    if (process.env.DATABASE_URL) {
+      console.log("🌐 Using DATABASE_URL to connect...")
+
+      const dbUrl = new URL(process.env.DATABASE_URL)
+      const [user, password] = dbUrl.username
+        ? [dbUrl.username, dbUrl.password]
+        : dbUrl.auth?.split(":") ?? []
+
+      const host = dbUrl.hostname
+      const port = parseInt(dbUrl.port || "3306")
+      const database = dbUrl.pathname.replace("/", "")
+
+      console.log(`Host: ${host}`)
+      console.log(`Port: ${port}`)
+      console.log(`User: ${user}`)
+      console.log(`Database: ${database}`)
+
+      connection = await mysql.createConnection({
+        host,
+        port,
+        user,
+        password,
+        database,
+        connectTimeout: 10000,
+      })
+    } else {
+      console.log("🖥️ Using local DB config...")
+      const host = process.env.DB_HOST || "127.0.0.1"
+      const port = parseInt(process.env.DB_PORT || "3306")
+      const user = process.env.DB_USER || "root"
+      const password = process.env.DB_PASSWORD || ""
+      const database = process.env.DB_NAME || "al_amin_raoe_motor"
+
+      console.log(`Host: ${host}`)
+      console.log(`Port: ${port}`)
+      console.log(`User: ${user}`)
+      console.log(`Database: ${database}`)
+
+      connection = await mysql.createConnection({
+        host,
+        port,
+        user,
+        password,
+        database,
+        connectTimeout: 10000,
+      })
+    }
 
     console.log("✅ Database connected successfully!")
 
@@ -29,16 +67,13 @@ async function testConnection() {
     const [notifications] = await connection.execute("SELECT COUNT(*) as count FROM notifications")
     console.log(`🔔 Notifications in database: ${notifications[0].count}`)
 
-    // Test problematic query
-    console.log("\n🧪 Testing problematic queries...")
-
     const [testQuery1] = await connection.execute(
-      "SELECT * FROM spare_parts WHERE is_active = 1 ORDER BY created_at DESC LIMIT 10",
+      "SELECT * FROM spare_parts WHERE is_active = 1 ORDER BY created_at DESC LIMIT 10"
     )
     console.log(`✅ LIMIT query works: ${testQuery1.length} results`)
 
     const [testQuery2] = await connection.execute(
-      "SELECT ddl.*, sp.code as part_code FROM daily_demand_logs ddl LEFT JOIN spare_parts sp ON ddl.spare_part_id = sp.id WHERE 1=1 ORDER BY ddl.created_at DESC LIMIT 5",
+      "SELECT ddl.*, sp.code as part_code FROM daily_demand_logs ddl LEFT JOIN spare_parts sp ON ddl.spare_part_id = sp.id WHERE 1=1 ORDER BY ddl.created_at DESC LIMIT 5"
     )
     console.log(`✅ Daily demand query works: ${testQuery2.length} results`)
 
@@ -47,16 +82,10 @@ async function testConnection() {
   } catch (error) {
     console.error("❌ Database connection test failed:", error.message)
     console.log("\n💡 Troubleshooting:")
-    console.log("   - MySQL server is running ✅")
-    console.log("   - Check if root user needs password")
-    console.log("   - Try setting DB_PASSWORD in .env.local")
-    console.log("   - Make sure database exists (run: npm run db:setup)")
-
-    if (error.code === "ECONNREFUSED") {
-      console.log("   - Connection refused - check if MySQL is on port 3306")
-      console.log("   - Try: lsof -i :3306 to check what's using port 3306")
-    }
-
+    console.log("   - MySQL server is running?")
+    console.log("   - Is DATABASE_URL correct?")
+    console.log("   - Cek apakah port, user, dan password cocok")
+    console.log("   - Gunakan lsof -i :3306 jika lokal")
     process.exit(1)
   }
 }
