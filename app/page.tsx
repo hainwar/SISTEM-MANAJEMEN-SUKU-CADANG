@@ -301,12 +301,12 @@ export default function PublicHomePage() {
                 <h3 className="font-semibold text-blue-900">Al-Amin Raoe Motor</h3>
               </div>
               <p className="text-sm text-blue-700 mb-4">
-                Bengkel motor terpercaya dengan layanan berkualitas dan suku cadang original
+                Bengkel Spesial Perawatan dan Servis Motor!
               </p>
               <div className="text-xs text-blue-600 space-y-1">
-                <p>📍 Alamat: Jl. Raya Motor No. 123, Kota</p>
-                <p>📞 Telepon: (021) 1234-5678</p>
-                <p>🕒 Buka: Senin - Sabtu, 08:00 - 17:00</p>
+                <p>📍 Alamat: Jl. Pahlawan No. 9 Kp. Baru Bulukumba</p>
+                <p>📞 Telepon: 085-656-677-916 </p>
+                <p>🕒 Buka: Setiap Hari, 08:00 - 17:00</p>
               </div>
               <div className="mt-4 pt-4 border-t border-blue-200">
                 <p className="text-xs text-blue-600">
